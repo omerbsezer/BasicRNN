@@ -61,18 +61,18 @@ def rnn_cell_backward(da_next, cache):
     ba = parameters["ba"]
     by = parameters["by"]
 
-    # compute the gradient of tanh with respect to a_next (≈1 line)
+    # compute the gradient of tanh with respect to a_next 
     dtanh = (1 - a_next ** 2) * da_next
 
-    # compute the gradient of the loss with respect to Wax (≈2 lines)
+    # compute the gradient of the loss with respect to Wax 
     dxt = np.dot(Wax.T, dtanh)
     dWax = np.dot(dtanh, xt.T)
 
-    # compute the gradient with respect to Waa (≈2 lines)
+    # compute the gradient with respect to Waa 
     da_prev = np.dot(Waa.T, dtanh)
     dWaa = np.dot(dtanh, a_prev.T)
 
-    # compute the gradient with respect to b (≈1 line)
+    # compute the gradient with respect to b 
     dba = np.sum(dtanh, 1, keepdims=True)
 
     # Store the gradients in a python dictionary
@@ -105,7 +105,7 @@ def rnn_forward(x, a0, parameters):
     n_x, m, T_x = x.shape
     n_y, n_a = parameters["Wya"].shape
 
-    # initialize "a" and "y" with zeros (≈2 lines)
+    # initialize "a" and "y" with zeros 
     a = np.zeros((n_a, m, T_x))
     y_pred = np.zeros((n_y, m, T_x))
 
@@ -114,13 +114,13 @@ def rnn_forward(x, a0, parameters):
 
     # loop over all time-steps
     for t in range(T_x):
-        # Update next hidden state, compute the prediction, get the cache (≈1 line)
+        # Update next hidden state, compute the prediction, get the cache
         a_next, yt_pred, cache = rnn_cell_forward(x[:, :, t], a_next, parameters)
-        # Save the value of the new "next" hidden state in a (≈1 line)
+        # Save the value of the new "next" hidden state in a 
         a[:, :, t] = a_next
-        # Save the value of the prediction in y (≈1 line)
+        # Save the value of the prediction in y 
         y_pred[:, :, t] = yt_pred
-        # Append "cache" to "caches" (≈1 line)
+        # Append "cache" to "caches" 
         caches.append(cache)
 
     # store values needed for backward propagation in cache
@@ -144,15 +144,15 @@ def rnn_backward(da, caches):
                         dba -- Gradient w.r.t the bias, of shape (n_a, 1)
     """
 
-    # Retrieve values from the first cache (t=1) of caches (≈2 lines)
+    # Retrieve values from the first cache (t=1) of caches 
     (caches, x) = caches
     (a1, a0, x1, parameters) = caches[0]
 
-    # Retrieve dimensions from da's and x1's shapes (≈2 lines)
+    # Retrieve dimensions from da's and x1's shapes 
     n_a, m, T_x = da.shape
     n_x, m = x1.shape
 
-    # initialize the gradients with the right sizes (≈6 lines)
+    # initialize the gradients with the right sizes 
     dx = np.zeros((n_x, m, T_x))
     dWax = np.zeros((n_a, n_x))
     dWaa = np.zeros((n_a, n_a))
@@ -162,18 +162,18 @@ def rnn_backward(da, caches):
 
     # Loop through all the time steps
     for t in reversed(range(T_x)):
-        # Compute gradients at time step t. Choose wisely the "da_next" and the "cache" to use in the backward propagation step. (≈1 line)
+        # Compute gradients at time step t. Choose wisely the "da_next" and the "cache" to use in the backward propagation step. 
         gradients = rnn_cell_backward(da[:, :, t] + da_prevt, caches[t])
-        # Retrieve derivatives from gradients (≈ 1 line)
+        # Retrieve derivatives from gradients 
         dxt, da_prevt, dWaxt, dWaat, dbat = gradients["dxt"], gradients["da_prev"], gradients["dWax"], gradients[
             "dWaa"], gradients["dba"]
-        # Increment global derivatives w.r.t parameters by adding their derivative at time-step t (≈4 lines)
+        # Increment global derivatives w.r.t parameters by adding their derivative at time-step t
         dx[:, :, t] = dxt
         dWax += dWaxt
         dWaa += dWaat
         dba += dbat
 
-    # Set da0 to the gradient of a which has been backpropagated through all time-steps (≈1 line)
+    # Set da0 to the gradient of a which has been backpropagated through all time-steps
     da0 = da_prevt
 
     # Store the gradients in a python dictionary
